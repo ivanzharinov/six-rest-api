@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -51,13 +52,13 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(response)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(http.StatusOK)
+		log.Printf("Error writing response: %v", err)
+		return
 	}
+
 }
 
 // добавление задачи
@@ -77,14 +78,14 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, ok := tasks[task.ID]
-	if !ok {
-		tasks[task.ID] = task
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-	} else {
+	if ok {
 		http.Error(w, "Задача с таким id уже существует", http.StatusBadRequest)
 		return
 	}
+
+	tasks[task.ID] = task
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 
 }
 
@@ -105,12 +106,12 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(response)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(http.StatusOK)
+		log.Printf("Error writing response: %v", err)
 	}
+
 }
 
 // удаление задачи по ID
